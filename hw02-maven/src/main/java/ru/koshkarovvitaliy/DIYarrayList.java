@@ -17,11 +17,9 @@ public class DIYarrayList<T> implements List<T> {
     public DIYarrayList(int capacity) {
         if (capacity == 0) {
             this.elements = EMPTY_OBJECT;
-            //this.size = elements.length;
         }
         else if (capacity > 0) {
             this.elements = new Object[capacity];
-            //this.size = elements.length;
         }
         else {
             throw new IllegalArgumentException("Illegal capacity : " + capacity);
@@ -40,13 +38,11 @@ public class DIYarrayList<T> implements List<T> {
 
     @Override
     public T get(int index) {
-        //Objects.checkIndex(index, size);
         return getOldElement(index);
     }
 
     @Override
     public T set(int index, T element) {
-        //Objects.checkIndex(index, size);
         T oldValue = getOldElement(index);
         elements[index] = element;
         return oldValue;
@@ -95,10 +91,6 @@ public class DIYarrayList<T> implements List<T> {
         } else {
             return elements = new Object[Math.max(DEFAULT_SIZE, minCapacity)];
         }
-//        Object[] o = elements;
-//        elements = new Object[o.length * 2 + 1];
-//        System.arraycopy(o, 0, elements, 0, o.length);
-//        return o;
     }
 
     private static int newLength(int oldLength, int minGrowth, int prefGrowth) {
