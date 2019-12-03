@@ -1,23 +1,13 @@
-package ru.koshkarovvitaliy.bankCells;
+package ru.koshkarovvitaliy.bankcells;
 
 import ru.koshkarovvitaliy.Banknote;
 
 import java.util.Map;
 import java.util.HashMap;
 
-public class BankCell_200 implements BankCell {
-    private final Banknote name = Banknote.$200;
-    private static final BankCell bankCell = new BankCell_200();
+public class BankCell_500 implements BankCell {
+    private final Banknote name = Banknote.$500;
     private final Map<Banknote, Integer> cell;
-
-    public static BankCell getInstance() {
-        synchronized (BankCell_200.class) {
-            if (bankCell == null) {
-                return new BankCell_200();
-            }
-            return bankCell;
-        }
-    }
 
     @Override
     public int countSum() {
@@ -27,7 +17,6 @@ public class BankCell_200 implements BankCell {
             Integer quantity = pair.getValue();
             sum = Integer.parseInt(banknote) * quantity;
         }
-        System.out.println("Сумма ячейки " + getName() + ": " + sum);
         return sum;
     }
 
@@ -41,8 +30,15 @@ public class BankCell_200 implements BankCell {
         return name;
     }
 
-    private BankCell_200() {
+    @Override
+    public void addBanknote() {
+        int oldValue = cell.get(name);
+        int newValue = oldValue + 1;
+        cell.replace(name, oldValue, newValue);
+    }
+
+    public BankCell_500() {
         cell = new HashMap<>();
-        cell.put(Banknote.$200, 10);
+        cell.put(Banknote.$500, 10);
     }
 }

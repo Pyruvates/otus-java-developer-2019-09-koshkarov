@@ -1,10 +1,10 @@
 package ru.koshkarovvitaliy.atm;
 
 import ru.koshkarovvitaliy.Banknote;
-import ru.koshkarovvitaliy.bankCells.BankCell;
-import ru.koshkarovvitaliy.bankCells.BankCell_100;
-import ru.koshkarovvitaliy.bankCells.BankCell_200;
-import ru.koshkarovvitaliy.bankCells.BankCell_500;
+import ru.koshkarovvitaliy.bankcells.BankCell;
+import ru.koshkarovvitaliy.bankcells.BankCell_100;
+import ru.koshkarovvitaliy.bankcells.BankCell_200;
+import ru.koshkarovvitaliy.bankcells.BankCell_500;
 
 import java.util.Map;
 import java.util.List;
@@ -14,9 +14,9 @@ public class ATM {
     private final List<BankCell> cells = new ArrayList<>();
 
     public ATM() {
-        this.cells.add(BankCell_100.getInstance());
-        this.cells.add(BankCell_200.getInstance());
-        this.cells.add(BankCell_500.getInstance());
+        this.cells.add(new BankCell_100());
+        this.cells.add(new BankCell_200());
+        this.cells.add(new BankCell_500());
     }
 
     public void receiveBanknote(final Banknote banknote) {
@@ -40,7 +40,6 @@ public class ATM {
     }
 
     public int balance() {
-        System.out.println();
         int balance = 0;
         for (BankCell elem : cells) {
             balance += elem.countSum();
@@ -51,10 +50,7 @@ public class ATM {
     private void addBanknoteToCell(final Banknote banknote) {
         for (BankCell elem : cells) {
             if (elem.getName().equals(banknote)) {
-                final Banknote key = elem.getName();
-                final int oldValue = elem.getCell().get(key);
-                final int newValue = oldValue + 1;
-                elem.getCell().replace(key, oldValue, newValue);
+                elem.addBanknote();
                 System.out.println("Добавлена банкнота номиналом: " + elem.getName());
             }
         }
@@ -77,8 +73,8 @@ public class ATM {
             }
         }
 
-        final Map<Banknote, Integer> cell = cells.get(index).getCell();
-        final int faceValue = Integer.parseInt(cells.get(index).getName().toString().substring(1));
+        Map<Banknote, Integer> cell = cells.get(index).getCell();
+        int faceValue = Integer.parseInt(cells.get(index).getName().toString().substring(1));
         while (sum - faceValue >= 0) {
             if (checkCell(cell, banknote)) {
                 sum = sum - faceValue;
@@ -90,7 +86,7 @@ public class ATM {
     }
 
     private boolean checkCell(Map<Banknote, Integer> map, Banknote banknote) {
-        final int value = map.get(banknote);
+        int value = map.get(banknote);
         if (value > 0) {
             map.replace(banknote, value, value - 1);
             return true;

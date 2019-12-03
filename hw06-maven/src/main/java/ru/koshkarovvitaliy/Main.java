@@ -17,22 +17,22 @@ public class Main {
         atm.receiveBanknote(Banknote.$500);
 
         balance = atm.balance();
-        System.out.println("Общий баланс ATM: " + balance);
+        System.out.println("Общий баланс ATM: " + balance + "\r\n");
 
         atm.giveOutMinBanknotes(8300);
 
         balance = atm.balance();
-        System.out.println("Общий баланс ATM: " + balance);
+        System.out.println("Общий баланс ATM: " + balance + "\r\n");
 
         atm.giveOutMinBanknotes(1700);
 
         balance = atm.balance();
-        System.out.println("Общий баланс ATM: " + balance);
+        System.out.println("Общий баланс ATM: " + balance + "\r\n");
 
         atm.giveOutMinBanknotes(42);
 
         balance = atm.balance();
-        System.out.println("Общий баланс ATM: " + balance);
+        System.out.println("Общий баланс ATM: " + balance + "\r\n");
 
         atm.giveOutMinBanknotes(1400);
 
