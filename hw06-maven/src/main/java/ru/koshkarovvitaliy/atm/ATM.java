@@ -1,12 +1,8 @@
 package ru.koshkarovvitaliy.atm;
 
 import ru.koshkarovvitaliy.Banknote;
-import ru.koshkarovvitaliy.bankcells.BankCell;
-import ru.koshkarovvitaliy.bankcells.BankCell_100;
-import ru.koshkarovvitaliy.bankcells.BankCell_200;
-import ru.koshkarovvitaliy.bankcells.BankCell_500;
+import ru.koshkarovvitaliy.bankcells.*;
 
-import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -14,9 +10,9 @@ public class ATM {
     private final List<BankCell> cells = new ArrayList<>();
 
     public ATM() {
-        this.cells.add(new BankCell_100());
-        this.cells.add(new BankCell_200());
-        this.cells.add(new BankCell_500());
+        this.cells.add(new BankCellBuilder(Banknote.$100, 10));
+        this.cells.add(new BankCellBuilder(Banknote.$200, 10));
+        this.cells.add(new BankCellBuilder(Banknote.$500, 10));
     }
 
     public void receiveBanknote(final Banknote banknote) {
@@ -66,17 +62,19 @@ public class ATM {
     private int giveBanknote(int requiredSum, Banknote banknote) {
         int sum = requiredSum;
         int index = 0;
+        BankCell bankCell = null;
         for (int i = 0; i < cells.size(); i++) {
             if (cells.get(i).getName().equals(banknote)) {
+                bankCell = cells.get(i);
                 index = i;
                 break;
             }
         }
 
-        Map<Banknote, Integer> cell = cells.get(index).getCell();
         int faceValue = Integer.parseInt(cells.get(index).getName().toString().substring(1));
         while (sum - faceValue >= 0) {
-            if (checkCell(cell, banknote)) {
+            if (checkBalanceInCell(bankCell)) {
+                bankCell.giveOutBanknote();
                 sum = sum - faceValue;
             } else {
                 break;
@@ -85,10 +83,8 @@ public class ATM {
         return sum;
     }
 
-    private boolean checkCell(Map<Banknote, Integer> map, Banknote banknote) {
-        int value = map.get(banknote);
-        if (value > 0) {
-            map.replace(banknote, value, value - 1);
+    private boolean checkBalanceInCell(BankCell bankCell) {
+        if (bankCell.countSum() > 0) {
             return true;
         }
         return false;

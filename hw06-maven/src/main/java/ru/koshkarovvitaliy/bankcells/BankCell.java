@@ -2,11 +2,9 @@ package ru.koshkarovvitaliy.bankcells;
 
 import ru.koshkarovvitaliy.Banknote;
 
-import java.util.Map;
-
 public interface BankCell {
     int countSum();
-    Map<Banknote, Integer> getCell();
     Banknote getName();
     void addBanknote();
+    void giveOutBanknote();
 }
