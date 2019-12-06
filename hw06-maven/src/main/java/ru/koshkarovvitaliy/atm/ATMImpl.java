@@ -6,19 +6,21 @@ import ru.koshkarovvitaliy.bankcells.*;
 import java.util.List;
 import java.util.ArrayList;
 
-public class ATM {
+public class ATMImpl implements ATM {
     private final List<BankCell> cells = new ArrayList<>();
 
-    public ATM() {
-        this.cells.add(new BankCellBuilder(Banknote.$100, 10));
-        this.cells.add(new BankCellBuilder(Banknote.$200, 10));
-        this.cells.add(new BankCellBuilder(Banknote.$500, 10));
+    public ATMImpl() {
+        this.cells.add(new BankCellImpl(Banknote.$100, 10));
+        this.cells.add(new BankCellImpl(Banknote.$200, 10));
+        this.cells.add(new BankCellImpl(Banknote.$500, 10));
     }
 
+    @Override
     public void receiveBanknote(final Banknote banknote) {
         addBanknoteToCell(banknote);
     }
 
+    @Override
     public void giveOutMinBanknotes(int sum) {
         int requiredSum = sum;
         if (isEnoughBalance(sum)) {
@@ -35,6 +37,7 @@ public class ATM {
         }
     }
 
+    @Override
     public int balance() {
         int balance = 0;
         for (BankCell elem : cells) {
@@ -71,7 +74,7 @@ public class ATM {
             }
         }
 
-        int faceValue = Integer.parseInt(cells.get(index).getName().toString().substring(1));
+        int faceValue = cells.get(index).faceValue();
         while (sum - faceValue >= 0) {
             if (checkBalanceInCell(bankCell)) {
                 bankCell.giveOutBanknote();

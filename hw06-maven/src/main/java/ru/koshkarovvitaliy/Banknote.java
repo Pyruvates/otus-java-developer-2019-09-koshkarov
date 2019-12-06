@@ -1,10 +1,17 @@
 package ru.koshkarovvitaliy;
 
 public enum Banknote {
-    $100(100, 10),
-    $200(200, 10),
-    $500(500, 10);
+    $100(100),
+    $200(200),
+    $500(500);
 
-    Banknote(int faceValue, int quantity) {
+    private final int faceValue;
+
+    Banknote(int faceValue) {
+        this.faceValue = faceValue;
+    }
+
+    public int getFaceValue() {
+        return faceValue;
     }
 }

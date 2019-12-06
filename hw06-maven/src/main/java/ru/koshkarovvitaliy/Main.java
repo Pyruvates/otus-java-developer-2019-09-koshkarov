@@ -1,10 +1,10 @@
 package ru.koshkarovvitaliy;
 
-import ru.koshkarovvitaliy.atm.ATM;
+import ru.koshkarovvitaliy.atm.ATMImpl;
 
 public class Main {
     public static void main(String[] args) {
-        ATM atm = new ATM();
+        ATMImpl atm = new ATMImpl();
         int balance = atm.balance();
         System.out.println("Общий баланс ATM: " + balance + "\r\n");
 
