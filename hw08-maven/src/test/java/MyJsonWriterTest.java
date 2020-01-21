@@ -4,12 +4,15 @@
  */
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import myjsonwriter.MyJsonWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MyJsonWriterTest {
     private MyJsonWriter jsonWriter;
@@ -52,5 +55,11 @@ public class MyJsonWriterTest {
         System.out.println(json);
         ComplexObject complexObject2 = gson.fromJson(json, ComplexObject.class);
         Assertions.assertEquals(complexObject1, complexObject2);
+    }
+
+    @Test
+    void escapeQuotes() {
+        Gson gson = new GsonBuilder().serializeNulls().create();
+        assertEquals(gson.toJson("abc\"def"), jsonWriter.toJson("abc\"def"));
     }
 }

@@ -29,5 +29,13 @@ public class Main {
         System.out.println(myBag2);
 
         System.out.println("---------------------------------------------");
+
+        String obj1 = "abc\"def";
+        MyJsonWriter jsonWriter = new MyJsonWriter();
+        String json = jsonWriter.toJson(obj1);
+        System.out.println(json);
+        String obj2 = gson.fromJson(json, String.class);
+        System.out.println(obj1.equals(obj2));
+        System.out.println(obj2);
     }
 }

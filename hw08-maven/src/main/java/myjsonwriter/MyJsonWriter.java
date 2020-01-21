@@ -7,6 +7,7 @@ import java.util.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class MyJsonWriter {
 
@@ -49,7 +50,7 @@ public class MyJsonWriter {
 
         if (isPrimitiveType(obj)) return obj.toString();
         if (obj instanceof Character) return ElementWrapper.QUOTES.wrap(obj.toString());
-        if (obj instanceof String) return ElementWrapper.QUOTES.wrap(obj.toString());
+        if (obj instanceof String) return ElementWrapper.QUOTES.wrap(StringEscapeUtils.escapeJava((String) obj));
 
         if (isArray(obj)) return getArray(obj);
         if (isIterable(obj)) return getIterable(obj);
