@@ -10,6 +10,7 @@
     <modules>
         <module>hw01-maven</module>
         <module>hw02-maven</module>
+        <module>hw05-maven</module>
         <module>hw06-maven</module>
         <module>hw08-maven</module>
     </modules>
