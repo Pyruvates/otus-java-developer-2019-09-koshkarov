@@ -9,23 +9,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>hw06-maven</artifactId>
+    <artifactId>hw05-maven</artifactId>
 
-    <name>hw06-maven</name>
+    <name>hw05-maven</name>
 
     <packaging>pom</packaging>
-
-    <properties>
-        <junit.jupiter.version>5.5.2</junit.jupiter.version>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
 </project>
