@@ -57,7 +57,12 @@ public class SimpleJUnit {
                     method.setAccessible(true);
                     method.invoke(obj);
 //                    for testing failed method calls:
-//                    throw new Exception("Exception has been caught when call method: " + method.getName());
+                    try {
+                        throw new IllegalAccessException("Exception has been caught when call method: " + method.getName());
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        failedTests++;
+                    }
                 }
 
                 System.out.println("----------");
