@@ -25,6 +25,8 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <spring.version>3.2.3.RELEASE</spring.version>
+        <h2.database>1.4.200</h2.database>
+        <slf4j-log4j12>1.7.30</slf4j-log4j12>
     </properties>
 
     <dependencies>
@@ -41,9 +43,21 @@
         </dependency>
 
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j-log4j12}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j-log4j12}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <version>${h2.database}</version>
         </dependency>
     </dependencies>
 </project>
