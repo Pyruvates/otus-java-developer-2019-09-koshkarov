@@ -2,8 +2,8 @@ package orm.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import orm.entities.Id;
 
+import java.beans.Statement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
@@ -14,19 +14,17 @@ public class DbExecutorImpl<T> {
     private static final String URL = "jdbc:h2:mem:";
     private final Connection connection;
 
-    private LinkedHashMap<String, Class<?>> fieldNames;
-    private String idField;
+    private Map<String, Class<?>> fieldNames;
 
     public DbExecutorImpl() throws SQLException {
         log = LoggerFactory.getLogger(DbExecutorImpl.class);
         this.connection = DriverManager.getConnection(URL);
     }
 
-    public void createTable(Class<T> cls) throws NoSuchFieldException {
-        fieldNames = getFieldNames(cls);
-        idField = getIdFieldName(cls);
+    public void createTable(Class<T> cls) {
+        saveFieldNames(cls);
 
-        try (PreparedStatement ps = connection.prepareStatement(sqlCreateTable(cls))) {
+        try (PreparedStatement ps = connection.prepareStatement(generateCreateTableQuery(cls))) {
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error(ex.getMessage());
@@ -35,12 +33,12 @@ public class DbExecutorImpl<T> {
 
     public void create(T objectData) {
         Savepoint savepoint;
-        Class<T> aClass = (Class<T>) objectData.getClass();
-        StringBuilder sql = sqlCreateEntity(aClass);
+        @SuppressWarnings("unchecked") Class<T> aClass = (Class<T>) objectData.getClass();
+        StringBuilder sql = generateInsertQuery(aClass);
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
-            fillSqlWithValues(objectData, ps, sql);
-            System.out.println(sql);
+            fillQueryWithValues(sql, objectData, ps);
+
             savepoint = connection.setSavepoint("insert_savepoint");
 
             try {
@@ -62,43 +60,43 @@ public class DbExecutorImpl<T> {
 
     }
 
-    public T load(long id, Class<T> cls) throws SQLException {
-        StringBuilder sql = sqlSelectEntity(cls);
+    public T load(long id, Class<T> cls) {
+        StringBuilder sql = generateSelectQuery(cls);
+
+        T instance = null;
+        try {
+            instance = cls.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+            ex.printStackTrace();
+        }
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             ps.setLong(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String name = "";
-                    int age = 0;
+                    T finalInstance = instance;
 
-                    for (Map.Entry<String, Class<?>> pair : fieldNames.entrySet()) {
-                        String fieldName = pair.getKey();
-                        Class<?> fieldType = pair.getValue();
-
-                        if (fieldType.getSimpleName().equals("String")) {
-                            name = rs.getString(fieldName);
-                            continue;
+                    fieldNames.forEach((fieldName, fieldType) -> {
+                        try {
+                            Object fieldValue = getRSValue(rs, fieldName, fieldType);
+                            Statement st = new Statement(finalInstance, "set" + firstCharToUpperCase(fieldName), new Object[]{fieldValue});
+                            st.execute();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
-
-                        if (fieldType.getSimpleName().equals("int")) {
-                            age = rs.getInt(fieldName);
-                        }
-                    }
+                    });
 
                     sql.append(", Params: [").append(id).append("]");
                     System.out.println(sql);
-
-                    return cls.getConstructor(long.class, String.class, int.class).newInstance(id, name, age);
+                    return finalInstance;
                 }
-            } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException
-                    | InvocationTargetException ex) {
-
-                ex.printStackTrace();
             }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
-        throw new SQLException("Entity with id " + id + " does not exist");
+
+        return instance;
     }
 
     public void closeConnection() {
@@ -111,38 +109,32 @@ public class DbExecutorImpl<T> {
         }
     }
 
-    private StringBuilder sqlSelectEntity(Class<T> cls) {
-        StringBuilder sb = new StringBuilder("SELECT ");
+    private StringBuilder generateSelectQuery(Class<T> cls) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
         fieldNames.forEach((fieldName, fieldType) -> sb.append(fieldName).append(","));
         sb.deleteCharAt(sb.length() - 1)
                 .append(" FROM ")
                 .append(cls.getSimpleName().toLowerCase(Locale.ROOT))
                 .append(" WHERE ")
-                .append(idField)
+                .append(fieldNames.keySet().iterator().next())
                 .append(" = ?");
-
+        System.out.println(sb);
         return sb;
     }
 
-    private String getIdFieldName(Class<T> cls) throws NoSuchFieldException {
-        for (Field fld : cls.getDeclaredFields()) {
-            if (fld.isAnnotationPresent(Id.class)) {
-                return fld.getName();
-            }
-        }
-        throw new NoSuchFieldException("Class " + cls.getSimpleName() + " has no field with @Id annotation");
-    }
-
-    private String sqlCreateTable(Class<T> cls) {
-        StringBuilder sql = new StringBuilder("create table ");
-        sql.append(cls.getSimpleName().toLowerCase(Locale.ROOT)).append("(");
-        constructColumns(sql);
+    private String generateCreateTableQuery(Class<T> cls) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("create table ")
+                .append(cls.getSimpleName().toLowerCase(Locale.ROOT))
+                .append("(");
+        toListColumns(sql);
 
         System.out.println(sql);
         return sql.toString();
     }
 
-    private void constructColumns(StringBuilder sql) {
+    private void toListColumns(StringBuilder sql) {
         for (Map.Entry<String, Class<?>> pair : fieldNames.entrySet()) {
             String fieldName = pair.getKey();
             Class<?> fieldType = pair.getValue();
@@ -165,9 +157,11 @@ public class DbExecutorImpl<T> {
         sql.deleteCharAt(sql.length() - 1).append(")");
     }
 
-    private StringBuilder sqlCreateEntity(Class<T> cls) {
-        StringBuilder sb = new StringBuilder("INSERT INTO ");
-        sb.append(cls.getSimpleName().toLowerCase(Locale.ROOT)).append("(");
+    private StringBuilder generateInsertQuery(Class<T> cls) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ")
+                .append(cls.getSimpleName().toLowerCase(Locale.ROOT))
+                .append("(");
         fieldNames.forEach((fieldName, fieldType) -> sb.append(fieldName).append(","));
         sb.deleteCharAt(sb.length() - 1).append(") VALUES (");
         fieldNames.forEach((fieldName, fieldType) -> sb.append("?,"));
@@ -175,22 +169,20 @@ public class DbExecutorImpl<T> {
         return sb;
     }
 
-    private LinkedHashMap<String, Class<?>> getFieldNames(Class<T> cls) {
-        LinkedHashMap<String, Class<?>> fields = new LinkedHashMap<>();
+    private void saveFieldNames(Class<T> cls) {
+        fieldNames = new LinkedHashMap<>();
 
         try {
             for (Field fld : cls.getConstructor().newInstance().getClass().getDeclaredFields()) {
                 fld.setAccessible(true);
-                fields.put(fld.getName(), fld.getType());
+                fieldNames.put(fld.getName(), fld.getType());
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
             log.error(ex.getMessage());
         }
-
-        return fields;
     }
 
-    private void fillSqlWithValues(T objectData, PreparedStatement ps, StringBuilder sql) throws SQLException {
+    private void fillQueryWithValues(StringBuilder sql, T objectData, PreparedStatement ps) throws SQLException {
         sql.append(", Params: [");
 
         List<Object> fieldValues = getFieldValues(objectData);
@@ -202,19 +194,23 @@ public class DbExecutorImpl<T> {
                 sql.append(value).append(",");
                 continue;
             }
+
             if (o instanceof String) {
                 String value = (String) o;
                 ps.setString(2, value);
                 sql.append(value).append(",");
                 continue;
             }
+
             if (o instanceof Integer) {
                 int value = (int) o;
                 ps.setInt(3, value);
                 sql.append(value).append(",");
             }
+
             sql.deleteCharAt(sql.length() -1).append("]");
         }
+        System.out.println(sql);
     }
 
     private List<Object> getFieldValues(T objectData) {
@@ -230,6 +226,26 @@ public class DbExecutorImpl<T> {
         }
 
         return values;
+    }
+
+    private Object getRSValue(ResultSet rs, String fieldName, Class<?> fieldType) throws SQLException {
+        if (fieldType.getSimpleName().equals("long")) {
+            return rs.getLong(fieldName);
+        }
+
+        if (fieldType.getSimpleName().equals("String")) {
+            return rs.getString(fieldName);
+        }
+
+        if (fieldType.getSimpleName().equals("int")) {
+            return rs.getInt(fieldName);
+        }
+
+        return new Object();
+    }
+
+    private String firstCharToUpperCase(String value) {
+        return value.substring(0, 1).toUpperCase(Locale.ROOT) + value.substring(1);
     }
 
     private void rollbackToSavepoint(Connection con, Savepoint savepoint) {
