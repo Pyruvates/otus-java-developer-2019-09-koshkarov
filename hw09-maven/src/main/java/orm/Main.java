@@ -6,7 +6,7 @@ import orm.entities.User;
 import java.sql.SQLException;
 
 public class Main {
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, NoSuchFieldException {
         DbExecutorImpl<User> dbExecutorUser = new DbExecutorImpl<>();
 
         dbExecutorUser.createTable(User.class);
@@ -14,7 +14,7 @@ public class Main {
         User john = new User(1, "John", 32);
         dbExecutorUser.create(john);
         User loadUser = dbExecutorUser.load(john.getId(), User.class);
-        System.out.println("Load user:\n" + loadUser);
+        System.out.println("Load user:\n" + loadUser + "\n");
 
         User julia = new User(2, "Julia", 27);
         dbExecutorUser.create(julia);
