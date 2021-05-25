@@ -74,31 +74,20 @@ public class DbExecutorImpl<T> {
         }
     }
 
-    public void createOrUpdate(T objectData) {
-
-    }
-
     public T load(long id, Class<T> cls) {
         StringBuilder sql = generateSelectQuery(cls);
-
-        T instance = null;
-        try {
-            instance = cls.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-            ex.printStackTrace();
-        }
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             ps.setLong(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    T finalInstance = instance;
+                    T instance = cls.getConstructor().newInstance();
 
                     fieldNames.forEach((fieldName, fieldType) -> {
                         try {
                             Object fieldValue = getRSValue(rs, fieldName, fieldType);
-                            Statement st = new Statement(finalInstance, "set" + firstCharToUpperCase(fieldName), new Object[]{fieldValue});
+                            Statement st = new Statement(instance, "set" + firstCharToUpperCase(fieldName), new Object[]{fieldValue});
                             st.execute();
                         } catch (Exception ex) {
                             ex.printStackTrace();
@@ -107,14 +96,14 @@ public class DbExecutorImpl<T> {
 
                     sql.append(", Params: [").append(id).append("]");
                     System.out.println(sql);
-                    return finalInstance;
+                    return instance;
                 }
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             ex.printStackTrace();
         }
 
-        return instance;
+        return null;
     }
 
     public void closeConnection() {
@@ -171,7 +160,7 @@ public class DbExecutorImpl<T> {
                 .append(" WHERE ")
                 .append(fieldNames.keySet().iterator().next())
                 .append(" = ?");
-        System.out.println(sb);
+
         return sb;
     }
 
@@ -197,7 +186,6 @@ public class DbExecutorImpl<T> {
                 .append(fieldNames.keySet().iterator().next())
                 .append(" = ?");
 
-        System.out.println(sb);
         return sb;
     }
 
