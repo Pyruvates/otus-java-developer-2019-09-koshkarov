@@ -13,13 +13,18 @@ public class Main {
 
         User john = new User(1, "John", 32);
         dbExecutorUser.create(john);
-        User loadUser = dbExecutorUser.load(john.getId(), User.class);
-        System.out.println("Load " + loadUser + "\n");
+        User loadJohn = dbExecutorUser.load(john.getId(), User.class);
+        System.out.println("Load " + loadJohn + "\n");
 
         User julia = new User(2, "Julia", 27);
         dbExecutorUser.create(julia);
         User loadJulia = dbExecutorUser.load(2, User.class);
-        System.out.println("Load " + loadJulia);
+        System.out.println("Load " + loadJulia + "\n");
+
+        john.setAge(33);
+        dbExecutorUser.update(john);
+        loadJohn = dbExecutorUser.load(john.getId(), User.class);
+        System.out.println("Load " + loadJohn + "\n");
 
         dbExecutorUser.closeConnection();
     }

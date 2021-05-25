@@ -2,6 +2,7 @@ package orm.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import orm.entities.Id;
 
 import java.beans.Statement;
 import java.lang.reflect.Field;
@@ -37,7 +38,7 @@ public class DbExecutorImpl<T> {
         StringBuilder sql = generateInsertQuery(aClass);
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
-            fillQueryWithValues(sql, objectData, ps);
+            fillInsertQueryWithValues(sql, objectData, ps);
 
             savepoint = connection.setSavepoint("insert_savepoint");
 
@@ -53,7 +54,24 @@ public class DbExecutorImpl<T> {
     }
 
     public void update(T objectData) {
+        Savepoint savepoint;
+        @SuppressWarnings("unchecked") Class<T> aClass = (Class<T>) objectData.getClass();
+        StringBuilder sql = generateUpdateQuery(aClass);
 
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            fillUpdateQueryWithValues(sql, objectData, ps);
+
+            savepoint = connection.setSavepoint("update_savepoint");
+
+            try {
+                ps.executeUpdate();
+            } catch (SQLException ex) {
+                rollbackToSavepoint(connection, savepoint);
+                ex.printStackTrace();
+            }
+        } catch (SQLException ex) {
+            log.error(ex.getMessage());
+        }
     }
 
     public void createOrUpdate(T objectData) {
@@ -109,20 +127,6 @@ public class DbExecutorImpl<T> {
         }
     }
 
-    private StringBuilder generateSelectQuery(Class<T> cls) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ");
-        fieldNames.forEach((fieldName, fieldType) -> sb.append(fieldName).append(","));
-        sb.deleteCharAt(sb.length() - 1)
-                .append(" FROM ")
-                .append(cls.getSimpleName().toLowerCase(Locale.ROOT))
-                .append(" WHERE ")
-                .append(fieldNames.keySet().iterator().next())
-                .append(" = ?");
-        System.out.println(sb);
-        return sb;
-    }
-
     private String generateCreateTableQuery(Class<T> cls) {
         StringBuilder sql = new StringBuilder();
         sql.append("create table ")
@@ -157,6 +161,46 @@ public class DbExecutorImpl<T> {
         sql.deleteCharAt(sql.length() - 1).append(")");
     }
 
+    private StringBuilder generateSelectQuery(Class<T> cls) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        fieldNames.forEach((fieldName, fieldType) -> sb.append(fieldName).append(","));
+        sb.deleteCharAt(sb.length() - 1)
+                .append(" FROM ")
+                .append(cls.getSimpleName().toLowerCase(Locale.ROOT))
+                .append(" WHERE ")
+                .append(fieldNames.keySet().iterator().next())
+                .append(" = ?");
+        System.out.println(sb);
+        return sb;
+    }
+
+    private StringBuilder generateUpdateQuery(Class<T> cls) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ")
+                .append(cls.getSimpleName().toLowerCase(Locale.ROOT))
+                .append(" SET ");
+        try {
+            for (Field fld : cls.getConstructor().newInstance().getClass().getDeclaredFields()) {
+                if (fld.isAnnotationPresent(Id.class)) {
+                    continue;
+                }
+
+                fld.setAccessible(true);
+                sb.append(fld.getName()).append(" = ?,");
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+            log.error(ex.getMessage());
+        }
+        sb.deleteCharAt(sb.length() - 1)
+                .append(" WHERE ")
+                .append(fieldNames.keySet().iterator().next())
+                .append(" = ?");
+
+        System.out.println(sb);
+        return sb;
+    }
+
     private StringBuilder generateInsertQuery(Class<T> cls) {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ")
@@ -182,7 +226,7 @@ public class DbExecutorImpl<T> {
         }
     }
 
-    private void fillQueryWithValues(StringBuilder sql, T objectData, PreparedStatement ps) throws SQLException {
+    private void fillInsertQueryWithValues(StringBuilder sql, T objectData, PreparedStatement ps) throws SQLException {
         sql.append(", Params: [");
 
         List<Object> fieldValues = getFieldValues(objectData);
@@ -206,6 +250,37 @@ public class DbExecutorImpl<T> {
                 int value = (int) o;
                 ps.setInt(3, value);
                 sql.append(value).append(",");
+            }
+
+            sql.deleteCharAt(sql.length() -1).append("]");
+        }
+        System.out.println(sql);
+    }
+
+    private void fillUpdateQueryWithValues(StringBuilder sql, T objectData, PreparedStatement ps) throws SQLException {
+        sql.append(", Params: [");
+
+        List<Object> fieldValues = getFieldValues(objectData);
+
+        for (Object o : fieldValues) {
+            if (o instanceof String) {
+                String value = (String) o;
+                ps.setString(1, value);
+                sql.append(value).append(",");
+                continue;
+            }
+
+            if (o instanceof Integer) {
+                int value = (int) o;
+                ps.setInt(2, value);
+                sql.append(value).append(",");
+            }
+
+            if (o instanceof Long) {
+                long value = (long) o;
+                ps.setLong(3, value);
+                sql.append(value).append(",");
+                continue;
             }
 
             sql.deleteCharAt(sql.length() -1).append("]");
