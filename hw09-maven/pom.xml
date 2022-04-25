@@ -24,7 +24,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <spring.version>5.2.21.RELEASE</spring.version>
+        <spring.version>5.3.19</spring.version>
         <h2.database>2.1.210</h2.database>
         <slf4j-log4j12>1.7.30</slf4j-log4j12>
     </properties>
