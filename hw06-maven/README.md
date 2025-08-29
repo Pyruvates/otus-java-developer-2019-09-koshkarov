@@ -1,13 +1,13 @@
-Эмулятор банкомата
+ATM Emulator
 
-Написать эмулятор АТМ (банкомата).
+Write an ATM emulator.
 
-Объект класса АТМ должен уметь:
+An ATM class object must be able to:
 
-- принимать банкноты разных номиналов (на каждый номинал должна быть своя ячейка);
+- accept banknotes of different denominations (there must be a separate cell for each denomination);
 
-- выдавать запрошенную сумму минимальным количеством банкнот или ошибку если сумму нельзя выдать;
+- issue the requested amount in a minimum number of banknotes or an error if the amount cannot be issued;
 
-Это задание не на алгоритмы, а на проектирование, поэтому оптимизировать выдачу не надо.
+This is not a task for algorithms, but for design, so there is no need to optimize the issuance.
 
-- выдавать сумму остатка денежных средств.
+- issue the amount of the remaining funds.
