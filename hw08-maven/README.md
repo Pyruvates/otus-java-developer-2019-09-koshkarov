@@ -1,8 +1,8 @@
-**Cвой json object writer**
+**Custom json object writer**
 
-Напишите свой json object writer (object to JSON string) аналогичный gson на основе javax.json.
+Write your own json object writer (object to JSON string) similar to gson based on javax.json.
 
-Поддержите:
+Support:
 
-- массивы объектов и примитивных типов
-- коллекции из стандартный библиотеки.
+- arrays of objects and primitive types
+- collections from the standard library.
