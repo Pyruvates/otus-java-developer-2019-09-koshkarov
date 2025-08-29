@@ -1,36 +1,41 @@
-Самодельный ORM
+Homemade ORM
 
-Работа должна использовать базу данных H2. 
+The job should use the H2 database.
 
-Создайте в базе таблицу User с полями:
+Create a User table in the database with the following fields:
 
-* id bigint(20) NOT NULL auto_increment 
+* id bigint(20) NOT NULL auto_increment
 * name varchar(255)
 * age int(3)
 
-Создайте свою аннотацию @Id
+Create your own @Id annotation
 
-Создайте класс User (с полями, которые соответствуют таблице, поле id отметьте аннотацией).
+Create a User class (with fields that match the table, mark the id field with annotation).
 
-Напишите DBExecutor, который умеет работать с классами, имеющих поле с аннотацией @Id.
-DBExecutor должен сохранять объект в базу, и читать объект из базы. 
-Имя таблицы должно соответствовать имени класса, а поля класса — это колонки в таблице.
+Write a DBExecutor that can work with classes that have a field with the @Id annotation.
 
-Методы DBExecutor: 
-* void create(T objectData); 
-* void update(T objectData); 
-* void createOrUpdate(T objectData); // опционально.
+DBExecutor should save the object to the database, and read the object from the database.
+
+The table name should match the class name, and the class fields are the columns in the table.
+
+DBExecutor methods:
+
+* void create(T objectData);
+
+* void update(T objectData);
+
+* void createOrUpdate(T objectData); // optional.
 * T load(long id, Class clazz);
 
-Фактически, надо создать "генератор запросов". Сгенерированные запросы должны выполняться в уже готовом DbExecutor.
+In fact, you need to create a "query generator". The generated queries should be executed in the already existing DbExecutor.
 
-Проверьте его работу на классе User.
+Test it on the User class.
 
-Метод createOrUpdate - необязательный. Он должен "проверять" наличие объекта в таблице и создавать новый или обновлять существующий.
+The createOrUpdate method is optional. It should "check" for the presence of an object in the table and create a new one or update an existing one.
 
-Создайте еще одну таблицу Account: 
-* no bigint(20) NOT NULL auto_increment 
-* type varchar(255) 
+Create another Account table:
+* no bigint(20) NOT NULL auto_increment
+* type varchar(255)
 * rest int(3)
 
-Создайте для этой таблицы класс Account и проверьте работу DBExecutor на этом классе.
+Create an Account class for this table and test the DBExecutor on this class.
