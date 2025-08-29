@@ -1,26 +1,26 @@
-Свой тестовый фреймворк
+Own test framework
 
-Написать свой тестовый фреймворк.
+Write your own test framework.
 
-Поддержать свои аннотации @Test, @Before, @After.
+Support your own annotations @Test, @Before, @After.
 
-Запускать вызовом статического метода с именем класса с тестами.
+Launch by calling a static method with the name of the class with tests.
 
-Т.е. надо сделать:
+That is, you need to do:
 
-1. Создать три аннотации: @Test, @Before, @After.
+1. Create three annotations: @Test, @Before, @After.
 
-2. Создать класс-тест, в котором будут методы, отмеченные аннотациями.
+2. Create a test class that will contain methods marked with annotations.
 
-3. Создать "запускалку теста". На вход она должна получать имя класса с тестами, в котором следует найти и запустить методы отмеченные аннотациями и пункта 1.
+3. Create a "test launcher". As input, it should receive the name of the class with tests, in which you should find and launch the methods marked with annotations and point 1.
 
-4. Алгоритм запуска должен быть следующий:
-- метод(ы) Before
-- текущий метод Test
-- метод(ы) After
+4. The launch algorithm should be as follows:
+- method(s) Before
+- current method Test
+- method(s) After
 
-Для каждой такой "тройки" надо создать СВОЙ объект класса-теста.
+For each such "troika", you need to create YOUR OWN test class object.
 
-- Исключение в одном тесте не должно прерывать весь процесс тестирования.
+- An exception in one test should not interrupt the entire testing process.
 
-- На основании возникших во время тестирования исключений вывести статистику выполнения тестов (сколько прошло успешно, сколько упало, сколько было всего)
+- Based on the exceptions that occurred during testing, display test execution statistics (how many passed successfully, how many failed, how many in total)
